@@ -1,5 +1,3 @@
-from hugchat import hugchat
-from hugchat.login import Login
 import re
 import os
 import edge_tts
@@ -7,51 +5,20 @@ import xml.etree.ElementTree as ET
 from pydub import AudioSegment
 import asyncio
 
-# Log in to huggingface and grant authorization to huggingchat
-EMAIL = "your-email@domain.com" # replace with your Huggingface account
-PASSWD = "your-password" #replace with your Huggingface password
-cookie_path_dir = "./cookies/"  # NOTE: trailing slash (/) is required to avoid errors
-sign = Login(EMAIL, PASSWD)
-cookies = sign.login(cookie_dir_path=cookie_path_dir, save_cookies=True)
-
-print("Logged in successfully to Hugging Face.")
-
-# Create your ChatBot
-chatbot = hugchat.ChatBot(cookies=cookies.get_dict())
-print("ChatBot created.")
-
-
 # Configuration: speaker and language
-speaker1 = "Ava" # Change the name here
-speaker2 = "Andrew" # Change the name here
-lang = "English"  # Change the language here
+speaker1 = "Elena" # Change the name here
+speaker2 = "Tomas" # Change the name here
+lang = "Spanish"  # Change the language here
 
 # Voice mapping
 voice_map = {
-    "Ava": "en-US-AvaMultilingualNeural", # Change the edge-tts voice here
-    "Andrew": "en-US-AndrewMultilingualNeural" # Change the edge-tts voice here
+    "Elena": "es-AR-ElenaNeural", # Change the edge-tts voice here
+    "Tomas": "es-AR-TomasNeural" # Change the edge-tts voice here
 }
 
-# Function to generate SSML markup for a conversation between Ava and Andrew
-def generate_ssml_conversation(text, speaker1="Ava", speaker2="Andrew"):
+# Function to generate SSML markup for a conversation
+def generate_ssml_conversation(dialogue_text, speaker1="Elena", speaker2="Tomas"):
     print("Generating SSML conversation...")
-    # Start a new conversation
-    chatbot.new_conversation(switch_to=True)
-    
-    # Instruct the chatbot to create a light-hearted dialogue from the text
-    dialogue_prompt = (
-        f"Create a light-hearted conversation between two people based on the following text: '{text}'. "
-        f"The first person is {speaker1}, and the second person is {speaker2}. They should affirm each other "
-        f"and include pauses, but do not include stage directions or actions like (smiling) or (pausing). "
-        f"Let {speaker1} introduce the podcast and {speaker2} at the start. Text in {lang} and at least 10 turns of every speaker."
-    )
-    
-    try:
-        response = chatbot.chat(dialogue_prompt)
-        dialogue_text = str(response)  # Convert response to string if necessary
-    except hugchat.exceptions.ModelOverloadedError:
-        print("Error: Model is overloaded, please try again later.")
-        return None  # Return None to indicate failure
 
     # Remove any stage directions or descriptions in parentheses
     dialogue_text = re.sub(r'\([^)]*\)', '', dialogue_text).strip()
@@ -80,13 +47,13 @@ def generate_ssml_conversation(text, speaker1="Ava", speaker2="Andrew"):
     print("SSML conversation generated successfully.")
     return ssml_output
 
-# Read the input content from content.txt
-print("Reading input content from 'content.txt'...")
-with open("content.txt", "r") as file:
-    text_input = file.read().strip()
+# Read the input content from dialogue.txt
+print("Reading input content from 'dialogue.txt'...")
+with open("dialogue.txt", "r") as file:
+    dialogue_input = file.read().strip()
 
 # Generate SSML conversation
-ssml_conversation = generate_ssml_conversation(text_input)
+ssml_conversation = generate_ssml_conversation(dialogue_input)
 
 # Check if SSML conversation generation was successful
 if ssml_conversation is None:
